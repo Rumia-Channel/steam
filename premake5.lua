@@ -5,52 +5,49 @@
 build_base = "./"
 project_name = "krkrsteam"
 
-	solution (project_name)
-		configurations { "Release", "Debug" }
-		location   (build_base .. _ACTION)
-		objdir     (build_base .. _ACTION .. "/obj")
-		targetdir  ("bin")
-		flags
-		{
-			"No64BitChecks",
---			"ExtraWarnings",
-			"StaticRuntime",	-- set /MT(d) option.
-
-			"NoManifest",		-- Prevent the generation of a manifest.
-			"NoMinimalRebuild",	-- Disable minimal rebuild.
---			"NoIncrementalLink",	-- Disable incremental linking.
-			"NoPCH",		-- Disable precompiled header support.
-		}
-		includedirs
-		{
-			"$(STEAMWORKS_SDK)/public/steam",
-			"..",
-			"../ncbind",
-			"./",
-		}
+solution (project_name)
+    configurations { "Release", "Debug" }
+    location   (build_base .. _ACTION)
+    objdir     (build_base .. _ACTION .. "/obj")
+    targetdir  ("bin")
+    flags
+    {
+        "No64BitChecks",
+--      "ExtraWarnings",
+        "NoManifest",        -- Prevent the generation of a manifest.
+        "NoMinimalRebuild",  -- Disable minimal rebuild.
+--      "NoIncrementalLink", -- Disable incremental linking.
+        "NoPCH",             -- Disable precompiled header support.
+    }
+    includedirs
+    {
+        "$(STEAMWORKS_SDK)/public/steam",
+        "..",
+        "../ncbind",
+        "./",
+    }
 
     libdirs { "$(STEAMWORKS_SDK)/redistributable_bin/" }
 
-		configuration "Debug"
-			defines     "_DEBUG"
-			symbols	"On"
-			targetsuffix "-d"
+    filter { "configurations:Debug" }
+        defines     "_DEBUG"
+        symbols     "On"
+        targetsuffix "-d"
 
-		configuration "Release"
-			defines     "NDEBUG"
-			optimize "On"
+    filter { "configurations:Release" }
+        defines     "NDEBUG"
+        optimize    "On"
 
-	project (project_name)
-		targetname  (project_name)
-		language    "C++"
-		kind        "SharedLib"
+project (project_name)
+    targetname  (project_name)
+    language    "C++"
+    kind        "SharedLib"
 
-		files
-		{
-			"../tp_stub.cpp",
-			"../ncbind/ncbind.cpp",
-			"Main.cpp",
-			"Storages.cpp",
-			"SteamAchievements.cpp",
-		}
-
+    files
+    {
+        "../tp_stub.cpp",
+        "../ncbind/ncbind.cpp",
+        "Main.cpp",
+        "Storages.cpp",
+        "SteamAchievements.cpp",
+    }
