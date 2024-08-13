@@ -68,15 +68,93 @@ class Steam : public tTVPContinuousEventCallbackIntf {
 public:
 	// 初期化
 	static void registerSteam() {
-		instance = new Steam();
-		instance->init();
-		initStorage();
+		if (!instance) { // added
+			instance = new Steam();
+			instance->init();
+			initStorage();
+		} //added
 	}
 	// 解除
 	static void unregisterSteam() {
-		doneStorage();
-		delete instance;
+		if (instance) { //added
+			doneStorage();
+			delete instance;
+		} //added
 	}
+
+	//vvv[added]
+	// 遅延初期化対応
+	class SteamDelayRegister : public tTJSDispatch {
+		tTJSVariantClosure closure;
+		bool terminate;
+		bool PassThroughCheck(const tjs_char * membername, tjs_uint32 *hint) {
+			TVPAddLog(TVPFormatMessage(TJS_W("PassThroughCheck %1"), ttstr(membername)));
+			if (membername && ttstr(membername) == TJS_W("RestartAppIfNecessary")) return true; // ※メソッド名を合わせること
+			if (membername && !terminate) {
+				tTJSVariant v;
+				if (TJS_SUCCEEDED(closure.PropGet(0, membername, hint, &v, 0))) {
+					Steam::registerSteam(); // 遅延初期化実行
+					SetClosure(TJS_W("Steam"), closure);
+					this->Release();
+					terminate = true;
+				}
+			}
+			return false;
+		}
+		static bool GetClosure(const tjs_char * membername, tTJSVariantClosure &closure) {
+			bool r = false;
+			iTJSDispatch2 * global = TVPGetScriptDispatch();
+			if (global) {
+				tTJSVariant v;
+				if (TJS_SUCCEEDED(global->PropGet(0, membername, 0, &v, global))) {
+					closure = v.AsObjectClosure();
+					r = true;
+				}
+				global->Release();
+			}
+			return r;
+		}
+		static bool SetClosure(const tjs_char * membername, const tTJSVariantClosure &closure) {
+			bool r = false;
+			iTJSDispatch2 * global = TVPGetScriptDispatch();
+			if (global) {
+				tTJSVariant v(closure.Object, closure.ObjThis);
+				r = TJS_SUCCEEDED(global->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, membername, 0, &v, global));
+				global->Release();
+			}
+			return r;
+		}
+	public:
+		SteamDelayRegister() : closure(NULL,NULL), terminate(false) {
+			GetClosure(TJS_W("Steam"), closure);
+		}
+		~SteamDelayRegister() {
+			closure.Release();
+		}
+		void SetSelf() {
+			SetClosure(TJS_W("Steam"), tTJSVariantClosure(this, this));
+		}
+		// とりあえず FuncCall と PropGet だけ実装すれば十分と思われる
+		tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+			PassThroughCheck(membername, hint);
+			return closure.FuncCall(flag, membername, hint, result, numparams, param, objthis);
+		}
+		tjs_error TJS_INTF_METHOD PropGet(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result, iTJSDispatch2 *objthis) {
+			PassThroughCheck(membername, hint);
+			return closure.PropGet(flag, membername, hint, result, objthis);
+		}
+	};
+	static void setupSteam() {
+		SteamDelayRegister *delay = new SteamDelayRegister(); // Steam.*参照で自動破棄される
+		delay->SetSelf();
+	}
+	//^^^[added]
+
+	// Steamクライアント起動チェック
+	static bool RestartAppIfNecessary(tTVInteger appid) {
+		return SteamAPI_RestartAppIfNecessary(static_cast<uint32>(appid));
+	}
+
 	// コンストラクタ用(常に例外)
 	static tjs_error Factory(Steam **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		TVPThrowExceptionMessage(TJSGetMessageMapMessage(TJS_W("TVPCannotCreateInstance")).c_str());
@@ -657,6 +735,8 @@ NCB_REGISTER_CLASS(Steam) {
 	Factory(&Class::Factory);
 	NCB_METHOD(getLanguage);
 
+	NCB_METHOD(RestartAppIfNecessary); // added
+
 	NCB_METHOD(requestInitialize);
 	NCB_PROPERTY_RO(initialized, getInitialized);
 	NCB_PROPERTY_RO(achievementsCount, getAchievementsCount);
@@ -684,5 +764,8 @@ NCB_REGISTER_CLASS(Steam) {
 	NCB_METHOD(getDLCData);
 }
 
-NCB_REGISTER_CALLBACK(PreRegist,  Steam::registerSteam, 0, registerSteam_0);
+
+
+//NCB_REGISTER_CALLBACK(PreRegist,  Steam::registerSteam, 0, registerSteam_0); // CUT
+NCB_REGISTER_CALLBACK(PostRegist, Steam::setupSteam, 0, 0_setupSteam); //added
 NCB_REGISTER_CALLBACK(PostRegist, 0, Steam::unregisterSteam, 0_unregisterSteam);

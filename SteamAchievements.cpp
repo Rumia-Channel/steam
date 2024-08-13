@@ -105,16 +105,19 @@ SteamAchievements::clearAchievement(tTJSVariant n)
 	return false;
 }
 
+#undef OutputDebugString
+static void OutputDebugString(const TCHAR *buffer) {
+	TVPAddImportantLog(buffer);
+	::OutputDebugStringW(buffer);
+}
 
 void
 SteamAchievements::OnUserStatsReceived(UserStatsReceived_t *pCallback)
 {
  // we may get callbacks for other games' stats arriving, ignore them
-	if (m_iAppID == pCallback->m_nGameID) {
-		if (k_EResultOK == pCallback->m_eResult) {
-			OutputDebugString(_T("Received stats and achievements from Steam\n"));
-			m_bInitialized = true;
-		}
+	if (m_iAppID == pCallback->m_nGameID && k_EResultOK == pCallback->m_eResult) {
+		OutputDebugString(_T("Received stats and achievements from Steam\n"));
+		m_bInitialized = true;
 	} else {
 		TCHAR buffer[128];
 		_sntprintf(buffer, 128, _T("RequestStats - failed, %d\n"), pCallback->m_eResult);
@@ -126,10 +129,8 @@ void
 SteamAchievements::OnUserStatsStored(UserStatsStored_t *pCallback)
 {
 	// we may get callbacks for other games' stats arriving, ignore them
-	if (m_iAppID == pCallback->m_nGameID) {
-		if (k_EResultOK == pCallback->m_eResult) {
-			OutputDebugString(_T("Stored stats for Steam\n"));
-		}
+	if (m_iAppID == pCallback->m_nGameID && k_EResultOK == pCallback->m_eResult) {
+		OutputDebugString(_T("Stored stats for Steam\n"));
 	} else {
 		TCHAR buffer[128];
 		_sntprintf(buffer, 128, _T("StatsStored - failed, %d\n"), pCallback->m_eResult);
@@ -157,4 +158,3 @@ SteamAchievements::getName(tTJSVariant n, std::string &name)
 		name = convertTtstrToUtf8String(str);
 	}
 }
-
