@@ -42,7 +42,7 @@ if "%STEAMWORKS_SDK%" == "" (
 echo STEAMWORKS_SDK = %STEAMWORKS_SDK%
 
 rem Check if STEAMWORKS_SDK version is 1.4x or 1.45
-set STEAMWORKS_VERSION_FILE=%STEAMWORKS_SDK%/Readme.txt
+set STEAMWORKS_VERSION_FILE=%STEAMWORKS_SDK%\Readme.txt
 
 rem Read the version from the file
 setlocal enabledelayedexpansion
@@ -127,6 +127,10 @@ echo.
 
 echo Move folder "%~dp0\krkrsteam\steam\bin" to "%~dp0\%DLL_EDITION%"
 move "%~dp0\krkrsteam\steam\bin" "%~dp0\%DLL_EDITION%"
+echo.
+
+echo Copy steam_api.dll to "%~dp0\%DLL_EDITION%"
+copy "%STEAMWORKS_SDK%\redistributable_bin\steam_api.dll" "%~dp0\%DLL_EDITION%\steam_api.dll"
 echo.
 
 echo BUILD SUCCESSFUL!!

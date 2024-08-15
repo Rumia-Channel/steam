@@ -31,6 +31,8 @@ krkrsteam は 吉里吉里のゲームをSteamに対応させるためのプラ�
     [元となったリポジトリ]()では1.45を想定しているので, **推奨は1.45**.
 
 ## HOW TO USE
+Release フォルダから krkrsteam.dll と steam_api.dll を利用したいプロジェクトの plugin フォルダにコピー.
+
 first.ks に以下の文を追加.
 ```javascript
 [eval exp="Steam.requestInitialize()"]
@@ -63,3 +65,4 @@ STEAMWORKS SDK は STEAMが定める規約に準拠して利用してくださ�
 * [Steam.RestartAppIfNecessary(APPID) を追加してみた, GitHub Gist](https://gist.github.com/miahmie/eb855fe738e76eaea683507742c9f58e)
 * [実績解除の際に実績名でオープンする, X (旧Twitter)](https://x.com/miahmie/status/1182663036391383040)
 * [Steamプラグインの初期化漏れ対策, X (旧Twitter)](https://x.com/miahmie/status/1182704749327446016)
+* [吉里吉里のゲームをSTEAMに対応する方法 プラグイン編, holizonglow](https://horizonglow2.blogspot.com/2019/01/steam.html)

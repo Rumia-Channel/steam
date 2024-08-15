@@ -129,6 +129,10 @@ echo Move folder "%~dp0\krkrsteam\steam\bin" to "%~dp0\%DLL_EDITION%"
 move "%~dp0\krkrsteam\steam\bin" "%~dp0\%DLL_EDITION%"
 echo.
 
+echo Copy steam_api.dll to "%~dp0\%DLL_EDITION%"
+copy "%STEAMWORKS_SDK%\redistributable_bin\steam_api.dll" "%~dp0\%DLL_EDITION%\steam_api.dll"
+echo.
+
 echo BUILD SUCCESSFUL!!
 echo.
 pause
