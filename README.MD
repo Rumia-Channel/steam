@@ -46,7 +46,7 @@ if (Steam.RestartAppIfNecessary(APPID)) return System.terminate(1); // Steamク�
 ```
 次のようなマクロを作成すれば, Steam の実績解除を便利に利用できる.
 ```javascript
-// 実績解除
+; 実績解除
 [macro name=実績][eval exp="Steam.setAchievement(mp.name)"][endmacro]
 ```
 そのほかの使い方に関しては, [manual.tjs](krkrsteam/steam/manual.tjs) を参考にした方が早い.
